@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="toolkitAccountSettings">
+    <option name="activeProfile" value="profile:ash-dev" />
+    <option name="activeRegion" value="ap-south-1" />
+    <option name="recentlyUsedProfiles">
+      <list>
+        <option value="profile:ash-dev" />
+        <option value="profile:default" />
+      </list>
+    </option>
+    <option name="recentlyUsedRegions">
+      <list>
+        <option value="ap-south-1" />
+      </list>
+    </option>
+  </component>
+  <component name="toolkitConnectionManager">
+    <option name="activeConnectionId" value="AwsConnectionManagerConnection" />
+  </component>
+  <component name="toolkitExplorerToolWindow">
+    <option name="selectedTab" value="Explorer" />
+  </component>
+</project>
