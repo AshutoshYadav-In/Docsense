@@ -1,30 +1,55 @@
 package com.project.ashutosh.security;
 
+import com.project.ashutosh.model.ApplicationSecret;
+import com.project.ashutosh.model.JwtSecret;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import javax.crypto.SecretKey;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Getter
+@Setter
 public class JwtService {
 
-  private final SecretKey signingKey;
-  private final long expirationMs;
+  @Autowired
+  private ApplicationSecret applicationSecret;
 
-  public JwtService(
-      @Value("${jwt.secret}") String secret,
-      @Value("${jwt.expiration-ms}") long expirationMs) {
-    if (secret.length() < 32) {
-      throw new IllegalStateException("jwt.secret must be at least 32 characters (256 bits) for HS256");
+  private SecretKey signingKey;
+  private long expirationMs;
+
+  @PostConstruct
+  void initFromApplicationSecret() {
+    JwtSecret jwt = jwtSecretFromApplicationSecret();
+    String secret = jwt.getSecret();
+    if (secret == null || secret.length() < 32) {
+      throw new IllegalStateException(
+          "ApplicationSecret.jwtSecret.secret must be set and at least 32 characters for HS256");
+    }
+    Long exp = jwt.getExpiration();
+    if (exp == null || exp <= 0) {
+      throw new IllegalStateException("ApplicationSecret.jwtSecret.expiration must be positive");
     }
     this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    this.expirationMs = expirationMs;
+    this.expirationMs = exp;
+  }
+
+  /** JWT settings from the autowired {@link ApplicationSecret} (AWS Secrets Manager JSON). */
+  private JwtSecret jwtSecretFromApplicationSecret() {
+    JwtSecret jwt = applicationSecret.getJwtSecret();
+    if (jwt == null) {
+      throw new IllegalStateException("ApplicationSecret.jwtSecret is required");
+    }
+    return jwt;
   }
 
   public String generateToken(Long userId, String email) {

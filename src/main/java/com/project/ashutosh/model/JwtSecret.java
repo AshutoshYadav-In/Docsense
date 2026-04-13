@@ -9,8 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ApplicationSecret {
+public class JwtSecret {
 
-  private JwtSecret jwtSecret;
-  private DatabaseCredentials databaseCredentials;
+  /** Symmetric key for HS256; at least 32 characters. */
+  private String secret;
+
+  /** Access token TTL in milliseconds. */
+  private Long expiration;
 }

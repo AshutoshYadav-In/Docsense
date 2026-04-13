@@ -6,7 +6,6 @@ import com.project.ashutosh.dto.LoginRequest;
 import com.project.ashutosh.dto.RegisterRequest;
 import com.project.ashutosh.entity.User;
 import com.project.ashutosh.security.JwtService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,14 +17,11 @@ public class AuthService {
   private final UserDao userDao;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
-  private final long expirationMs;
 
-  public AuthService(UserDao userDao, PasswordEncoder passwordEncoder, JwtService jwtService,
-      @Value("${jwt.expiration-ms}") long expirationMs) {
+  public AuthService(UserDao userDao, PasswordEncoder passwordEncoder, JwtService jwtService) {
     this.userDao = userDao;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
-    this.expirationMs = expirationMs;
   }
 
   @Transactional(readOnly = true)
@@ -36,7 +32,7 @@ public class AuthService {
       throw new BadCredentialsException("Invalid email or password");
     }
     String token = jwtService.generateToken(user.getId(), user.getEmail());
-    return new AuthResponse(token, "Bearer", expirationMs);
+    return new AuthResponse(token, "Bearer", jwtService.getExpirationMs());
   }
 
   @Transactional
@@ -50,6 +46,6 @@ public class AuthService {
     user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
     userDao.save(user);
     String token = jwtService.generateToken(user.getId(), user.getEmail());
-    return new AuthResponse(token, "Bearer", expirationMs);
+    return new AuthResponse(token, "Bearer", jwtService.getExpirationMs());
   }
 }
