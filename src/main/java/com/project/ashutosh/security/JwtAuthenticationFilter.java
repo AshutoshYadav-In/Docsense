@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import ch.qos.logback.core.util.StringUtil;
 import java.util.Collections;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,8 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    boolean userApi = isUserApi(request);
-    if (userApi) {
+    if (requiresBearerAuth(request)) {
       if (!authenticateFromBearerHeader(request, response, true)) {
         return;
       }
@@ -40,14 +40,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
-  /** Paths under {@code /api/users} require a valid Bearer JWT before the controller runs. */
-  private static boolean isUserApi(HttpServletRequest request) {
-    String uri = request.getRequestURI();
-    String context = request.getContextPath();
-    if (context != null && !context.isEmpty() && uri.startsWith(context)) {
-      uri = uri.substring(context.length());
-    }
-    return uri.startsWith("/api/users");
+  /** {@code /api/users} and {@code /api/tenants} require a valid Bearer JWT before the controller runs. */
+  private static boolean requiresBearerAuth(HttpServletRequest request) {
+    String path = TenantResolutionFilter.normalizedPath(request);
+    return path.startsWith("/api/users") || path.startsWith("/api/tenants");
   }
 
   /**
@@ -59,14 +55,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, boolean required)
       throws IOException {
     String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-    if (header == null || !header.startsWith("Bearer ")) {
+    if (StringUtil.isNullOrEmpty(header) || !header.startsWith("Bearer ")) {
       if (required) {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
       }
       return !required;
     }
-    String token = header.substring(7).trim();
-    if (token.isEmpty()) {
+    String token = header.substring(7);
+    if (StringUtil.isNullOrEmpty(token)) {
       if (required) {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
       }

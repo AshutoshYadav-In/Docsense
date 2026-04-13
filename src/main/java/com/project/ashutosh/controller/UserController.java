@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Tenant-scoped routes require {@code Authorization: Bearer} and {@code X-Tenant-Id} with the
- * tenant's external {@code reference_id} (UUID). Membership is validated per request.
+ * tenant's external {@code referenceId} (UUID in {@code X-Tenant-Id}). Membership is validated per request.
  */
 @RestController
 @RequestMapping("/api/users")

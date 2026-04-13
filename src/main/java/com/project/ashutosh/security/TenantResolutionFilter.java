@@ -1,5 +1,6 @@
 package com.project.ashutosh.security;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.project.ashutosh.entity.Tenant;
 import com.project.ashutosh.service.TenantMembershipService;
 import com.project.ashutosh.tenant.TenantContext;
@@ -17,6 +18,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * After JWT authentication, validates {@code X-Tenant-Id} (reference id) and membership for
  * tenant-scoped API paths. Sets {@link TenantContext} for the request.
+ *
+ * <p>Excluded (no X-Tenant-Id): {@code POST /api/tenants} (create), {@code GET /api/tenants} (list
+ * mine). All other {@code /api/tenants/...} and {@code /api/users} paths require the header.
  */
 public class TenantResolutionFilter extends OncePerRequestFilter {
 
@@ -46,13 +50,13 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
         return;
       }
       String header = request.getHeader(TENANT_HEADER);
-      if (header == null || header.isBlank()) {
+      if (StringUtil.isNullOrEmpty(header)) {
         response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing X-Tenant-Id");
         return;
       }
       UUID referenceId;
       try {
-        referenceId = UUID.fromString(header.trim());
+        referenceId = UUID.fromString(header);
       } catch (IllegalArgumentException e) {
         response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid X-Tenant-Id");
         return;
@@ -75,13 +79,30 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
     }
   }
 
-  /** Paths under {@code /api/users} after context path. */
-  private static boolean tenantApiPath(HttpServletRequest request) {
+  static String normalizedPath(HttpServletRequest request) {
     String uri = request.getRequestURI();
     String context = request.getContextPath();
     if (context != null && !context.isEmpty() && uri.startsWith(context)) {
       uri = uri.substring(context.length());
     }
-    return uri.startsWith("/api/users");
+    if (uri.length() > 1 && uri.endsWith("/")) {
+      uri = uri.substring(0, uri.length() - 1);
+    }
+    return uri.isEmpty() ? "/" : uri;
+  }
+
+  /** True when this request must carry X-Tenant-Id and the user must be a member. */
+  static boolean tenantApiPath(HttpServletRequest request) {
+    String path = normalizedPath(request);
+    String method = request.getMethod();
+    if ("/api/tenants".equals(path)) {
+      if ("POST".equalsIgnoreCase(method) || "GET".equalsIgnoreCase(method)) {
+        return false;
+      }
+    }
+    if (path.startsWith("/api/users")) {
+      return true;
+    }
+    return path.startsWith("/api/tenants/");
   }
 }

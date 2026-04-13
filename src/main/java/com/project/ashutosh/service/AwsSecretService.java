@@ -1,5 +1,6 @@
 package com.project.ashutosh.service;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ashutosh.model.ApplicationSecret;
@@ -32,8 +33,8 @@ public class AwsSecretService {
   }
 
   private static AwsCredentialsProvider credentialsProviderFor(String awsProfile) {
-    if (awsProfile != null && !awsProfile.isBlank()) {
-      return ProfileCredentialsProvider.builder().profileName(awsProfile.trim()).build();
+    if (!StringUtil.isNullOrEmpty(awsProfile)) {
+      return ProfileCredentialsProvider.builder().profileName(awsProfile).build();
     }
     return DefaultCredentialsProvider.builder().build();
   }
@@ -42,7 +43,7 @@ public class AwsSecretService {
     GetSecretValueRequest request = GetSecretValueRequest.builder().secretId(secretId).build();
     GetSecretValueResponse secretValue = secretsManagerClient.getSecretValue(request);
     String str = secretValue.secretString();
-    if (str == null) {
+    if (StringUtil.isNullOrEmpty(str)) {
       throw new IllegalStateException();
     }
     return str;

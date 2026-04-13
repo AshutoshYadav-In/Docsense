@@ -1,5 +1,6 @@
 package com.project.ashutosh.config;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.project.ashutosh.model.ApplicationSecret;
 import com.project.ashutosh.model.DatabaseCredentials;
 import com.zaxxer.hikari.HikariDataSource;
@@ -31,11 +32,11 @@ public class DatabaseConfig {
   @Primary
   public DataSource dataSource(ApplicationSecret applicationSecret) {
     DatabaseCredentials db = applicationSecret.getDatabaseCredentials();
-    if (db == null || db.getUrl() == null || db.getUrl().isBlank()) {
+    if (db == null || StringUtil.isNullOrEmpty(db.getUrl())) {
       throw new IllegalStateException();
     }
     HikariDataSource ds = new HikariDataSource();
-    ds.setJdbcUrl(db.getUrl().trim());
+    ds.setJdbcUrl(db.getUrl());
     ds.setUsername(db.getUsername());
     ds.setPassword(db.getPassword());
     ds.setMaximumPoolSize(MAXIMUM_POOL_SIZE);

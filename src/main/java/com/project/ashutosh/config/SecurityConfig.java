@@ -58,6 +58,8 @@ public class SecurityConfig {
                 .permitAll()
                 .requestMatchers("/api/users/**")
                 .authenticated()
+                .requestMatchers("/api/tenants/**")
+                .authenticated()
                 .anyRequest()
                 .permitAll());
     return http.build();
