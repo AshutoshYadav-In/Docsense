@@ -10,6 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * User persistence. For tenant-scoped queries, use {@link com.project.ashutosh.tenant.TenantContext}
+ * (set by {@link com.project.ashutosh.security.TenantResolutionFilter} on {@code /api/users/**}).
+ */
 @Service
 @Transactional
 public class UserService {
