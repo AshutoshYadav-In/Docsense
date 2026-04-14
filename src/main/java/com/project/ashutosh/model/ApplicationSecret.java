@@ -14,4 +14,5 @@ public class ApplicationSecret {
   private JwtSecret jwtSecret;
   private DatabaseCredentials databaseCredentials;
   private ClientSecret clientSecret;
+  private ElasticsearchCredentials elasticsearchCredentials;
 }

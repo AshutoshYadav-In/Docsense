@@ -1,7 +1,10 @@
 package com.project.ashutosh.controller;
 
+import com.project.ashutosh.dto.BulkInsertRequest;
+import com.project.ashutosh.dto.BulkInsertResponse;
 import com.project.ashutosh.dto.EmbedRequest;
 import com.project.ashutosh.dto.EmbedResponse;
+import com.project.ashutosh.service.InternalBulkInsertService;
 import com.project.ashutosh.service.InternalEmbeddingService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +20,16 @@ public class InternalEmbeddingController {
   @Autowired
   private InternalEmbeddingService internalEmbeddingService;
 
+  @Autowired
+  private InternalBulkInsertService internalBulkInsertService;
+
   @PostMapping("/embed")
   public EmbedResponse embed(@Valid @RequestBody EmbedRequest request) throws Exception {
     return internalEmbeddingService.embed(request);
+  }
+
+  @PostMapping("/bulkInsert")
+  public BulkInsertResponse bulkInsert(@Valid @RequestBody BulkInsertRequest request) {
+    return internalBulkInsertService.bulkInsert(request);
   }
 }
