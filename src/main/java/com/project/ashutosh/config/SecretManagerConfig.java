@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class SecretManagerConfig {
 
   @Value("${aws.secret.name}")
-  private String AWS_SECRET_NAME;
+  public String AWS_SECRET_NAME;
 
   @Bean
   public ApplicationSecret applicationSecret(AwsSecretService awsSecretService) {

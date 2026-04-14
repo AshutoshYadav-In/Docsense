@@ -19,6 +19,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * After JWT authentication, validates {@code X-Tenant-Id} (reference id) and membership for
  * tenant-scoped API paths. Sets {@link TenantContext} for the request.
  *
+ * <p>HTTP errors are resolved here (not in services): {@code 401} if not authenticated, {@code 400}
+ * if header missing/invalid UUID, {@code 404} if tenant unknown, {@code 403} if user is not a
+ * member.
+ *
  * <p>Excluded (no X-Tenant-Id): {@code POST /api/tenants} (create), {@code GET /api/tenants} (list
  * mine). All other {@code /api/tenants/...} and {@code /api/users} paths require the header.
  */

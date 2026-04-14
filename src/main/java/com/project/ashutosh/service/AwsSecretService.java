@@ -4,6 +4,7 @@ import ch.qos.logback.core.util.StringUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ashutosh.model.ApplicationSecret;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -17,19 +18,27 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
 @Service
 public class AwsSecretService {
 
-  private final ObjectMapper objectMapper;
-  private final SecretsManagerClient secretsManagerClient;
+  @Value("${aws.region}")
+  public String AWS_REGION;
 
-  public AwsSecretService(
-      @Value("${aws.region}") String region,
-      ObjectMapper objectMapper,
-      @Value("${aws.profile:}") String awsProfile) {
+  @Value("${aws.profile:}")
+  public String AWS_PROFILE;
+
+  private final ObjectMapper objectMapper;
+  private SecretsManagerClient secretsManagerClient;
+
+  public AwsSecretService(ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
-    AwsCredentialsProvider awsCredentialsProvider = credentialsProviderFor(awsProfile);
-    this.secretsManagerClient = SecretsManagerClient.builder()
-        .credentialsProvider(awsCredentialsProvider)
-        .region(Region.of(region))
-        .build();
+  }
+
+  @PostConstruct
+  void initSecretsManagerClient() {
+    AwsCredentialsProvider awsCredentialsProvider = credentialsProviderFor(AWS_PROFILE);
+    this.secretsManagerClient =
+        SecretsManagerClient.builder()
+            .credentialsProvider(awsCredentialsProvider)
+            .region(Region.of(AWS_REGION))
+            .build();
   }
 
   private static AwsCredentialsProvider credentialsProviderFor(String awsProfile) {

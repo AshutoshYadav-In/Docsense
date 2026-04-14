@@ -5,10 +5,11 @@ import com.project.ashutosh.dto.CreateUserRequest;
 import com.project.ashutosh.dto.UserResponse;
 import com.project.ashutosh.entity.User;
 import java.util.List;
-import java.util.Optional;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * User persistence. For tenant-scoped queries, use {@link com.project.ashutosh.tenant.TenantContext}
@@ -30,13 +31,16 @@ public class UserService {
     return userDao.findAll().stream().map(this::toResponse).toList();
   }
 
-  public Optional<UserResponse> findById(Long id) {
-    return userDao.findById(id).map(this::toResponse);
+  public UserResponse getUser(Long id) {
+    return userDao
+        .findById(id)
+        .map(this::toResponse)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
   }
 
   public UserResponse createUser(CreateUserRequest request) {
     if (userDao.existsByEmail(request.getEmail())) {
-      throw new IllegalArgumentException("Email already exists");
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
     }
     User user = new User();
     user.setEmail(request.getEmail());
@@ -46,7 +50,10 @@ public class UserService {
     return toResponse(saved);
   }
 
-  public void deleteById(Long id) {
+  public void deleteUser(Long id) {
+    if (userDao.findById(id).isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
     userDao.deleteById(id);
   }
 

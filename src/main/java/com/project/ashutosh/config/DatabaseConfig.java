@@ -14,19 +14,19 @@ import org.springframework.context.annotation.Primary;
 public class DatabaseConfig {
 
   @Value("${spring.datasource.hikari.maximum-pool-size}")
-  private int MAXIMUM_POOL_SIZE;
+  public int MAXIMUM_POOL_SIZE;
 
   @Value("${spring.datasource.hikari.minimum-idle}")
-  private int MINIMUM_IDLE;
+  public int MINIMUM_IDLE;
 
   @Value("${spring.datasource.hikari.connection-timeout}")
-  private long CONNECTION_TIMEOUT_MS;
+  public long CONNECTION_TIMEOUT_MS;
 
   @Value("${spring.datasource.hikari.idle-timeout}")
-  private long IDLE_TIMEOUT_MS;
+  public long IDLE_TIMEOUT_MS;
 
   @Value("${spring.datasource.hikari.max-lifetime}")
-  private long MAX_LIFETIME_MS;
+  public long MAX_LIFETIME_MS;
 
   @Bean
   @Primary

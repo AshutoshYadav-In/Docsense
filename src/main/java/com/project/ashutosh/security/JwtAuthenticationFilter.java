@@ -15,6 +15,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * Enforces Bearer JWT on {@code /api/users/**} and {@code /api/tenants/**}. Missing or invalid
+ * tokens yield {@code 401 Unauthorized} before the controller runs.
+ */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;

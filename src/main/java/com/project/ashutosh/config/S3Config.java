@@ -17,14 +17,18 @@ import software.amazon.awssdk.services.s3.S3Client;
 @Configuration
 public class S3Config {
 
+  @Value("${aws.region}")
+  public String AWS_REGION;
+
+  @Value("${aws.profile:}")
+  public String AWS_PROFILE;
+
   @Bean
-  public S3Client s3Client(
-      @Value("${aws.region}") String region,
-      @Value("${aws.profile:}") String awsProfile) {
-    AwsCredentialsProvider credentialsProvider = credentialsProviderFor(awsProfile);
+  public S3Client s3Client() {
+    AwsCredentialsProvider credentialsProvider = credentialsProviderFor(AWS_PROFILE);
     return S3Client.builder()
         .credentialsProvider(credentialsProvider)
-        .region(Region.of(region))
+        .region(Region.of(AWS_REGION))
         .build();
   }
 

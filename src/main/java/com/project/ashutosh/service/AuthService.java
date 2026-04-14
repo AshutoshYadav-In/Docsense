@@ -6,10 +6,12 @@ import com.project.ashutosh.dto.LoginRequest;
 import com.project.ashutosh.dto.RegisterRequest;
 import com.project.ashutosh.entity.User;
 import com.project.ashutosh.security.JwtService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Transactional
@@ -26,8 +28,10 @@ public class AuthService {
   }
 
   public AuthResponse login(LoginRequest request) {
-    User user = userDao.findByEmail(request.getEmail())
-        .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
+    User user =
+        userDao
+            .findByEmail(request.getEmail())
+            .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
     if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
       throw new BadCredentialsException("Invalid email or password");
     }
@@ -37,7 +41,7 @@ public class AuthService {
 
   public AuthResponse register(RegisterRequest request) {
     if (userDao.existsByEmail(request.getEmail())) {
-      throw new IllegalArgumentException("Email already registered");
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
     }
     User user = new User();
     user.setEmail(request.getEmail());

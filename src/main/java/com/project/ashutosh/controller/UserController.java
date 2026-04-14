@@ -3,8 +3,8 @@ package com.project.ashutosh.controller;
 import com.project.ashutosh.dto.CreateUserRequest;
 import com.project.ashutosh.dto.TenantContextResponse;
 import com.project.ashutosh.dto.UserResponse;
+import com.project.ashutosh.service.TenantRequestContextService;
 import com.project.ashutosh.service.UserService;
-import com.project.ashutosh.tenant.TenantContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Tenant-scoped routes require {@code Authorization: Bearer} and {@code X-Tenant-Id} with the
- * tenant's external {@code referenceId} (UUID in {@code X-Tenant-Id}). Membership is validated per request.
+ * tenant's external {@code referenceId} (UUID in {@code X-Tenant-Id}). Membership is validated per
+ * request in {@link com.project.ashutosh.security.TenantResolutionFilter}.
  */
 @RestController
 @RequestMapping("/api/users")
@@ -26,43 +28,32 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserService userService;
-  private final TenantContext tenantContext;
+  private final TenantRequestContextService tenantRequestContextService;
 
-  public UserController(UserService userService, TenantContext tenantContext) {
+  public UserController(
+      UserService userService, TenantRequestContextService tenantRequestContextService) {
     this.userService = userService;
-    this.tenantContext = tenantContext;
+    this.tenantRequestContextService = tenantRequestContextService;
   }
 
-  /** Confirms tenant resolution: internal id, reference id, and name for the current request. */
   @GetMapping("/user/tenant-context")
-  public ResponseEntity<TenantContextResponse> tenantContext() {
-    return tenantContext
-        .get()
-        .map(ctx -> ResponseEntity.ok(TenantContextResponse.fromContext(ctx)))
-        .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+  public TenantContextResponse tenantContext() {
+    return tenantRequestContextService.requireTenantContextResponse();
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<UserResponse> get(@PathVariable Long id) {
-    return userService.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+  public UserResponse get(@PathVariable Long id) {
+    return userService.getUser(id);
   }
 
   @PostMapping
   public ResponseEntity<UserResponse> create(@RequestBody CreateUserRequest request) {
-    try {
-      UserResponse created = userService.createUser(request);
-      return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.CONFLICT).build();
-    }
+    return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
-    if (userService.findById(id).isEmpty()) {
-      return ResponseEntity.notFound().build();
-    }
-    userService.deleteById(id);
-    return ResponseEntity.noContent().build();
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable Long id) {
+    userService.deleteUser(id);
   }
 }
