@@ -6,6 +6,7 @@ import com.project.ashutosh.dto.OnboardTenantMembersResponse;
 import com.project.ashutosh.dto.TenantResponse;
 import com.project.ashutosh.service.TenantService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("isAuthenticated()")
 public class TenantController {
 
-  private final TenantService tenantService;
-
-  public TenantController(TenantService tenantService) {
-    this.tenantService = tenantService;
-  }
+  @Autowired
+  private TenantService tenantService;
 
   @PostMapping
   public ResponseEntity<TenantResponse> createTenant(@RequestBody CreateTenantRequest request) {

@@ -5,6 +5,7 @@ import com.project.ashutosh.dto.TenantContextResponse;
 import com.project.ashutosh.dto.UserResponse;
 import com.project.ashutosh.service.TenantRequestContextService;
 import com.project.ashutosh.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,14 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("isAuthenticated()")
 public class UserController {
 
-  private final UserService userService;
-  private final TenantRequestContextService tenantRequestContextService;
+  @Autowired
+  private UserService userService;
 
-  public UserController(
-      UserService userService, TenantRequestContextService tenantRequestContextService) {
-    this.userService = userService;
-    this.tenantRequestContextService = tenantRequestContextService;
-  }
+  @Autowired
+  private TenantRequestContextService tenantRequestContextService;
 
   @GetMapping("/user/tenant-context")
   public TenantContextResponse tenantContext() {

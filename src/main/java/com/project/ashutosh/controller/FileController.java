@@ -2,6 +2,7 @@ package com.project.ashutosh.controller;
 
 import com.project.ashutosh.dto.DocumentUploadResponse;
 import com.project.ashutosh.service.TenantDocumentUploadService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,11 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 @PreAuthorize("isAuthenticated()")
 public class FileController {
 
-  private final TenantDocumentUploadService tenantDocumentUploadService;
-
-  public FileController(TenantDocumentUploadService tenantDocumentUploadService) {
-    this.tenantDocumentUploadService = tenantDocumentUploadService;
-  }
+  @Autowired
+  private TenantDocumentUploadService tenantDocumentUploadService;
 
   @PostMapping
   public DocumentUploadResponse upload(@RequestParam("file") MultipartFile file) {

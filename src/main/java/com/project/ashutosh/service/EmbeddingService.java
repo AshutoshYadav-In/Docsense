@@ -13,22 +13,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmbeddingService {
 
-  @Value(
-      "${djl.embedding.model-url:djl://ai.djl.huggingface.pytorch/sentence-transformers/all-MiniLM-L6-v2}")
-  private String modelUrl;
-
+  @Value("${model.url}")
+  private String MODEL_URL;
+  private static final String ENGINE = "PyTorch";
   private ZooModel<String, float[]> model;
   private Predictor<String, float[]> predictor;
 
   @PostConstruct
   void loadModel() throws Exception {
-    Criteria<String, float[]> criteria =
-        Criteria.builder()
-            .setTypes(String.class, float[].class)
-            .optModelUrls(modelUrl)
-            .optEngine("PyTorch")
-            .optTranslatorFactory(new TextEmbeddingTranslatorFactory())
-            .build();
+    Criteria<String, float[]> criteria = Criteria.builder().setTypes(String.class, float[].class)
+        .optModelUrls(MODEL_URL).optEngine(ENGINE).optTranslatorFactory(new TextEmbeddingTranslatorFactory()).build();
     model = ModelZoo.loadModel(criteria);
     predictor = model.newPredictor();
   }
@@ -43,7 +37,9 @@ public class EmbeddingService {
     }
   }
 
-  /** Returns embedding vector (e.g. 384 dimensions for all-MiniLM-L6-v2). */
+  /**
+   * Returns embedding vector (e.g. 384 dimensions for all-MiniLM-L6-v2).
+   */
   public synchronized float[] embed(String text) throws Exception {
     return predictor.predict(text);
   }
