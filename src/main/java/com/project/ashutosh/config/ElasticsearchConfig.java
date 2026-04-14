@@ -1,66 +1,86 @@
 package com.project.ashutosh.config;
 
 import ch.qos.logback.core.util.StringUtil;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.project.ashutosh.model.ApplicationSecret;
 import com.project.ashutosh.model.ElasticsearchCredentials;
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.message.BasicHeader;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
+import java.net.URI;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.transport.aws.AwsSdk2Transport;
+import org.opensearch.client.transport.aws.AwsSdk2TransportOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.http.SdkHttpClient;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.regions.Region;
 
+/**
+ * Amazon OpenSearch Service / Elasticsearch-compatible domains using <strong>IAM SigV4</strong>
+ * signing (instance/task role, env keys, profile, etc.). No fine-grained master user/password.
+ *
+ * <p>Ensure the execution role is allowed in the domain access policy and has the appropriate
+ * OpenSearch permissions (e.g. {@code es:ESHttp*} on the domain ARN).
+ */
 @Configuration
 public class ElasticsearchConfig {
 
+  @Value("${aws.region}")
+  public String AWS_REGION;
+
+  @Value("${aws.profile:}")
+  public String AWS_PROFILE;
+
   @Bean
-  public RestClient elasticsearchRestClient(ApplicationSecret applicationSecret) {
+  public OpenSearchClient openSearchClient(
+      ApplicationSecret applicationSecret) {
     ElasticsearchCredentials creds = applicationSecret.getElasticsearchCredentials();
     if (creds == null) {
       throw new IllegalStateException(
           "elasticsearch_credentials must be set in the application secret (AWS Secrets Manager JSON)");
     }
-    if (StringUtil.isNullOrEmpty(creds.getUris())) {
-      throw new IllegalStateException("elasticsearch_credentials.uris must be set");
+    if (StringUtil.isNullOrEmpty(creds.getUri())) {
+      throw new IllegalStateException("elasticsearch_credentials.uri must be set");
     }
-    if (StringUtil.isNullOrEmpty(creds.getIndexName())) {
-      throw new IllegalStateException("elasticsearch_credentials.index_name must be set");
-    }
-
-    String[] uriStrings = creds.getUris().split(",");
-    HttpHost[] hosts = new HttpHost[uriStrings.length];
-    for (int i = 0; i < uriStrings.length; i++) {
-      hosts[i] = HttpHost.create(uriStrings[i].trim());
+    if (StringUtil.isNullOrEmpty(AWS_REGION)) {
+      throw new IllegalStateException("aws.region must be set for OpenSearch SigV4 signing");
     }
 
-    RestClientBuilder builder = RestClient.builder(hosts);
+    URI endpoint = URI.create(creds.getUri().trim());
+    String host = hostFromUri(endpoint);
 
-    if (!StringUtil.isNullOrEmpty(creds.getApiKey())) {
-      builder.setDefaultHeaders(new Header[]{new BasicHeader("Authorization", "ApiKey " + creds.getApiKey().trim())});
-    } else if (!StringUtil.isNullOrEmpty(creds.getUsername()) && creds.getPassword() != null) {
-      BasicCredentialsProvider provider = new BasicCredentialsProvider();
-      provider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(creds.getUsername(), creds.getPassword()));
-      builder.setHttpClientConfigCallback(
-          httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(provider));
-    } else {
-      throw new IllegalStateException(
-          "Configure elasticsearch_credentials.api_key or username and password in application secret");
-    }
+    SdkHttpClient httpClient = ApacheHttpClient.builder().build();
 
-    return builder.build();
+    AwsCredentialsProvider credentialsProvider = credentialsProviderFor(AWS_PROFILE);
+
+    AwsSdk2TransportOptions transportOptions =
+        AwsSdk2TransportOptions.builder().setCredentials(credentialsProvider).build();
+
+    AwsSdk2Transport transport =
+        new AwsSdk2Transport(httpClient, host, Region.of(AWS_REGION), transportOptions);
+
+    return new OpenSearchClient(transport);
   }
 
-  @Bean
-  public ElasticsearchClient elasticsearchClient(RestClient elasticsearchRestClient) {
-    RestClientTransport transport =
-        new RestClientTransport(elasticsearchRestClient, new JacksonJsonpMapper());
-    return new ElasticsearchClient(transport);
+  private static AwsCredentialsProvider credentialsProviderFor(String awsProfile) {
+    if (!StringUtil.isNullOrEmpty(awsProfile)) {
+      return ProfileCredentialsProvider.builder().profileName(awsProfile).build();
+    }
+    return DefaultCredentialsProvider.builder().build();
+  }
+
+  /** Host (and non-default port if present) for {@link AwsSdk2Transport}. */
+  private static String hostFromUri(URI uri) {
+    String host = uri.getHost();
+    if (host == null || host.isEmpty()) {
+      throw new IllegalStateException("elasticsearch_credentials.uri must include a valid host");
+    }
+    int port = uri.getPort();
+    if (port != -1) {
+      return host + ":" + port;
+    }
+    return host;
   }
 }

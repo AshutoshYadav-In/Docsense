@@ -11,14 +11,9 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ElasticsearchCredentials {
 
-  /** One or more URIs (comma-separated). */
-  private String uris;
-
-  /** Elastic Cloud encoded API key (Authorization: ApiKey …). */
-  private String apiKey;
-
-  private String username;
-  private String password;
-
-  private String indexName;
+  /**
+   * OpenSearch domain endpoint URL (e.g. {@code https://search-xxx.us-east-1.es.amazonaws.com}).
+   * Used to derive the host; requests are signed with IAM (no master user/password).
+   */
+  private String uri;
 }
