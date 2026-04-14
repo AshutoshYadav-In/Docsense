@@ -34,7 +34,6 @@ public class UserService {
     return userDao.findById(id).map(this::toResponse);
   }
 
-  @Transactional
   public UserResponse createUser(CreateUserRequest request) {
     if (userDao.existsByEmail(request.getEmail())) {
       throw new IllegalArgumentException("Email already exists");
@@ -47,7 +46,6 @@ public class UserService {
     return toResponse(saved);
   }
 
-  @Transactional
   public void deleteById(Long id) {
     userDao.deleteById(id);
   }

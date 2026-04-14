@@ -42,7 +42,7 @@ public class TenantService {
     this.tenantContext = tenantContext;
   }
 
-  public TenantResponse createTenant(Long creatorUserId, CreateTenantRequest request) {
+  public TenantResponse createTenant(Long requesterUserId, CreateTenantRequest request) {
     if (StringUtil.isNullOrEmpty(request.getName())) {
       throw new IllegalArgumentException("name is required");
     }
@@ -51,13 +51,11 @@ public class TenantService {
     tenant.setName(request.getName());
     Tenant saved = tenantDao.save(tenant);
 
-    User creator =
-        userDao
-            .findById(creatorUserId)
-            .orElseThrow(() -> new IllegalStateException("Creator user not found"));
+    User requester = userDao.findById(requesterUserId)
+        .orElseThrow(() -> new IllegalStateException("Requester user not found"));
     TenantMember membership = new TenantMember();
     membership.setTenantId(saved.getId());
-    membership.setUserId(creator.getId());
+    membership.setUserId(requester.getId());
     tenantMemberDao.save(membership);
 
     return toResponse(saved);

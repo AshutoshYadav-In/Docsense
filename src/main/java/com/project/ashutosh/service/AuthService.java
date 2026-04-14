@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class AuthService {
 
   private final UserDao userDao;
@@ -24,7 +25,6 @@ public class AuthService {
     this.jwtService = jwtService;
   }
 
-  @Transactional(readOnly = true)
   public AuthResponse login(LoginRequest request) {
     User user = userDao.findByEmail(request.getEmail())
         .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
@@ -35,7 +35,6 @@ public class AuthService {
     return new AuthResponse(token, "Bearer", jwtService.getExpirationMs());
   }
 
-  @Transactional
   public AuthResponse register(RegisterRequest request) {
     if (userDao.existsByEmail(request.getEmail())) {
       throw new IllegalArgumentException("Email already registered");
