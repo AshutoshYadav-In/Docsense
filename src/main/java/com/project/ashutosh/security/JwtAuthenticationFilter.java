@@ -17,7 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Enforces Bearer JWT on {@code /api/users/**} and {@code /api/tenants/**}. Missing or invalid
- * tokens yield {@code 401 Unauthorized} before the controller runs.
+ * tokens yield {@code 401 Unauthorized} before the controller runs. {@code /api/internal/**} is
+ * skipped entirely (see {@link InternalClientAuthenticationFilter}).
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -31,6 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
+    String path = TenantResolutionFilter.normalizedPath(request);
+    if (path.startsWith("/api/internal")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
     if (requiresBearerAuth(request)) {
       if (!authenticateFromBearerHeader(request, response, true)) {
         return;

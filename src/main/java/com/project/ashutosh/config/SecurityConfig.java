@@ -1,5 +1,7 @@
 package com.project.ashutosh.config;
 
+import com.project.ashutosh.model.ApplicationSecret;
+import com.project.ashutosh.security.InternalClientAuthenticationFilter;
 import com.project.ashutosh.security.JwtAuthenticationFilter;
 import com.project.ashutosh.security.JwtService;
 import com.project.ashutosh.security.TenantResolutionFilter;
@@ -33,6 +35,12 @@ public class SecurityConfig {
   }
 
   @Bean
+  public InternalClientAuthenticationFilter internalClientAuthenticationFilter(
+      ApplicationSecret applicationSecret) {
+    return new InternalClientAuthenticationFilter(applicationSecret);
+  }
+
+  @Bean
   public TenantResolutionFilter tenantResolutionFilter(
       TenantContext tenantContext, TenantMembershipService tenantMembershipService) {
     return new TenantResolutionFilter(tenantContext, tenantMembershipService);
@@ -42,6 +50,7 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtAuthenticationFilter jwtAuthenticationFilter,
+      InternalClientAuthenticationFilter internalClientAuthenticationFilter,
       TenantResolutionFilter tenantResolutionFilter)
       throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)
@@ -50,12 +59,15 @@ public class SecurityConfig {
         .httpBasic(AbstractHttpConfigurer::disable);
 
     http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-    http.addFilterAfter(tenantResolutionFilter, JwtAuthenticationFilter.class);
+    http.addFilterAfter(internalClientAuthenticationFilter, JwtAuthenticationFilter.class);
+    http.addFilterAfter(tenantResolutionFilter, InternalClientAuthenticationFilter.class);
 
     http.authorizeHttpRequests(
         auth ->
             auth.requestMatchers("/api/auth/**")
                 .permitAll()
+                .requestMatchers("/api/internal/**")
+                .authenticated()
                 .requestMatchers("/api/users/**")
                 .authenticated()
                 .requestMatchers("/api/tenants/**")

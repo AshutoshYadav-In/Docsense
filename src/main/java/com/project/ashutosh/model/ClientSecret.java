@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ApplicationSecret {
+public class ClientSecret {
 
-  private JwtSecret jwtSecret;
-  private DatabaseCredentials databaseCredentials;
-  private ClientSecret clientSecret;
+  private String clientId;
+  private String clientToken;
 }
