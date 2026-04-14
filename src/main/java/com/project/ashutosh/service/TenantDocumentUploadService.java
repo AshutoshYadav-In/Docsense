@@ -1,7 +1,11 @@
 package com.project.ashutosh.service;
 
 import ch.qos.logback.core.util.StringUtil;
+import com.project.ashutosh.dao.DocumentJobDao;
 import com.project.ashutosh.dto.DocumentUploadResponse;
+import com.project.ashutosh.entity.DocumentJob;
+import com.project.ashutosh.entity.DocumentJobStatus;
+import com.project.ashutosh.security.CurrentUserIdProvider;
 import com.project.ashutosh.storage.TenantS3ObjectKeyFactory;
 import com.project.ashutosh.tenant.TenantContext;
 import java.io.IOException;
@@ -30,14 +34,20 @@ public class TenantDocumentUploadService {
   private final TenantContext tenantContext;
   private final TenantS3ObjectKeyFactory s3ObjectKeyFactory;
   private final S3Client s3Client;
+  private final DocumentJobDao documentJobDao;
+  private final CurrentUserIdProvider currentUserIdProvider;
 
   public TenantDocumentUploadService(
       TenantContext tenantContext,
       TenantS3ObjectKeyFactory s3ObjectKeyFactory,
-      S3Client s3Client) {
+      S3Client s3Client,
+      DocumentJobDao documentJobDao,
+      CurrentUserIdProvider currentUserIdProvider) {
     this.tenantContext = tenantContext;
     this.s3ObjectKeyFactory = s3ObjectKeyFactory;
     this.s3Client = s3Client;
+    this.documentJobDao = documentJobDao;
+    this.currentUserIdProvider = currentUserIdProvider;
   }
 
   public DocumentUploadResponse upload(MultipartFile file) {
@@ -51,6 +61,11 @@ public class TenantDocumentUploadService {
     UUID tenantReferenceId = tenantContext.get().map(TenantContext.Context::referenceId).orElseThrow(
         () -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
             "Tenant context missing after tenant filter"));
+
+    UUID jobReferenceId = UUID.randomUUID();
+    documentJobDao.save(
+        DocumentJob.builder().referenceId(jobReferenceId).creatorId(currentUserIdProvider.requireUserId())
+            .status(DocumentJobStatus.PROCESSING).build());
 
     String originalName = file.getOriginalFilename();
     String segment = uniqueFileNameSegment(originalName);
@@ -71,12 +86,8 @@ public class TenantDocumentUploadService {
       throw new UncheckedIOException(e);
     }
 
-    return new DocumentUploadResponse(
-        key,
-        originalName != null ? originalName : segment,
-        contentType,
-        file.getSize(),
-        AWS_S3_BUCKET);
+    return new DocumentUploadResponse(key, jobReferenceId, originalName != null ? originalName : segment, contentType,
+        file.getSize(), AWS_S3_BUCKET);
   }
 
   private static String uniqueFileNameSegment(String originalFilename) {
