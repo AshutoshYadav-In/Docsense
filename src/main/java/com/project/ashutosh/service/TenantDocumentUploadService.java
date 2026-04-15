@@ -71,11 +71,9 @@ public class TenantDocumentUploadService {
         DocumentJob.builder().referenceId(jobReferenceId).creatorId(currentUserIdProvider.requireUserId())
             .status(DocumentJobStatus.PROCESSING).build());
 
-    String originalName = file.getOriginalFilename();
     String folderName = jobReferenceId.toString();
-    String fileName = uniqueFileNameSegment(originalName);
 
-    String key = s3ObjectKeyFactory.objectKey(tenantReferenceId, folderName, fileName);
+    String key = s3ObjectKeyFactory.objectKey(tenantReferenceId, folderName, file.getOriginalFilename());
     String folderPrefix = s3ObjectKeyFactory.documentFolderPrefix(tenantReferenceId, folderName);
 
     String contentType = file.getContentType();
@@ -91,36 +89,11 @@ public class TenantDocumentUploadService {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-    DocumentIngestionEvent event = new DocumentIngestionEvent(key, folderPrefix, folderName, fileName, jobReferenceId,
-        originalName != null ? originalName : fileName, contentType, file.getSize(), AWS_S3_BUCKET);
+    DocumentIngestionEvent event = new DocumentIngestionEvent(key, folderPrefix, folderName, file.getOriginalFilename(),
+        jobReferenceId,
+        file.getOriginalFilename(), contentType, file.getSize(), AWS_S3_BUCKET);
     stepFunctionIngestionService.publish(event);
     return new DocumentUploadResponse(
-        jobReferenceId, folderName, fileName, AWS_S3_BUCKET, key, folderPrefix);
-  }
-
-  private static String uniqueFileNameSegment(String originalFilename) {
-    String base = safeBaseName(originalFilename);
-    String unique = UUID.randomUUID() + "_" + base;
-    if (unique.length() > MAX_FILENAME_LENGTH) {
-      unique = unique.substring(0, MAX_FILENAME_LENGTH);
-    }
-    return unique;
-  }
-
-  private static String safeBaseName(String originalFilename) {
-    if (StringUtil.isNullOrEmpty(originalFilename)) {
-      return "file";
-    }
-    String normalized = originalFilename.replace('\\', '/');
-    int last = normalized.lastIndexOf('/');
-    String base = last >= 0 ? normalized.substring(last + 1) : normalized;
-    base = base.trim();
-    if (base.isEmpty() || ".".equals(base) || "..".equals(base)) {
-      return "file";
-    }
-    if (base.length() > MAX_FILENAME_LENGTH) {
-      base = base.substring(0, MAX_FILENAME_LENGTH);
-    }
-    return base;
+        jobReferenceId, folderName, file.getOriginalFilename(), AWS_S3_BUCKET, key, folderPrefix);
   }
 }
