@@ -4,6 +4,7 @@ import com.project.ashutosh.dto.ChunkSearchHit;
 import com.project.ashutosh.dto.VectorSearchResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.opensearch.client.json.JsonData;
@@ -69,11 +70,8 @@ public class ChunkVectorSearchService {
 
     try {
       SearchResponse<JsonData> response = openSearchClient.search(request, JsonData.class);
-      List<ChunkSearchHit> hits = new ArrayList<>(topK);
+      List<ChunkSearchHit> candidates = new ArrayList<>();
       for (Hit<JsonData> hit : response.hits().hits()) {
-        if (hits.size() >= topK) {
-          break;
-        }
         JsonData source = hit.source();
         if (source == null) {
           continue;
@@ -84,10 +82,18 @@ public class ChunkVectorSearchService {
         String fileName = stringField(src, ES_FIELD_FILE_NAME);
         int chunkIndex = intField(src, ES_FIELD_CHUNK_INDEX);
         double score = hit.score() != null ? hit.score() : 0.0;
-        if (score < minRelevanceScore) {
+        candidates.add(new ChunkSearchHit(text, score, refId, fileName, chunkIndex));
+      }
+      candidates.sort(Comparator.comparingDouble(ChunkSearchHit::relevanceScore).reversed());
+      List<ChunkSearchHit> hits = new ArrayList<>(topK);
+      for (ChunkSearchHit h : candidates) {
+        if (h.relevanceScore() < minRelevanceScore) {
           continue;
         }
-        hits.add(new ChunkSearchHit(text, score, refId, fileName, chunkIndex));
+        hits.add(h);
+        if (hits.size() >= topK) {
+          break;
+        }
       }
       String answer = ragBedrockService.answerFromChunks(trimmed, hits);
       return new VectorSearchResponse(trimmed, openSearchIndexName, hits, answer);
