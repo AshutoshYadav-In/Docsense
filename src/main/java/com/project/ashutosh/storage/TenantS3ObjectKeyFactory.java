@@ -51,6 +51,16 @@ public final class TenantS3ObjectKeyFactory {
     return prefixForTenant(tenantReferenceId) + relative;
   }
 
+  /**
+   * Prefix for a document-owned folder under the tenant (ends with {@code /}). Upload the source
+   * file and pipeline outputs as keys under this prefix.
+   *
+   * @param folderSegment one path segment (e.g. document job {@code referenceId} string)
+   */
+  public String documentFolderPrefix(UUID tenantReferenceId, String folderSegment) {
+    return objectKey(tenantReferenceId, folderSegment) + "/";
+  }
+
   private static String joinNormalizedSegments(String... segments) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < segments.length; i++) {
