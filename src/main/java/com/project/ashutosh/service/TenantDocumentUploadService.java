@@ -2,7 +2,7 @@ package com.project.ashutosh.service;
 
 import ch.qos.logback.core.util.StringUtil;
 import com.project.ashutosh.dao.DocumentJobDao;
-import com.project.ashutosh.dto.DocumentUploadResponse;
+import com.project.ashutosh.dto.DocumentIngestionEvent;
 import com.project.ashutosh.entity.DocumentJob;
 import com.project.ashutosh.entity.DocumentJobStatus;
 import com.project.ashutosh.security.CurrentUserIdProvider;
@@ -36,21 +36,24 @@ public class TenantDocumentUploadService {
   private final S3Client s3Client;
   private final DocumentJobDao documentJobDao;
   private final CurrentUserIdProvider currentUserIdProvider;
+  private final StepFunctionIngestionService stepFunctionIngestionService;
 
   public TenantDocumentUploadService(
       TenantContext tenantContext,
       TenantS3ObjectKeyFactory s3ObjectKeyFactory,
       S3Client s3Client,
       DocumentJobDao documentJobDao,
-      CurrentUserIdProvider currentUserIdProvider) {
+      CurrentUserIdProvider currentUserIdProvider,
+      StepFunctionIngestionService stepFunctionIngestionService) {
     this.tenantContext = tenantContext;
     this.s3ObjectKeyFactory = s3ObjectKeyFactory;
     this.s3Client = s3Client;
     this.documentJobDao = documentJobDao;
     this.currentUserIdProvider = currentUserIdProvider;
+    this.stepFunctionIngestionService = stepFunctionIngestionService;
   }
 
-  public DocumentUploadResponse upload(MultipartFile file) {
+  public void upload(MultipartFile file) {
     if (file == null || file.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "file is required");
     }
@@ -85,9 +88,9 @@ public class TenantDocumentUploadService {
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-
-    return new DocumentUploadResponse(key, jobReferenceId, originalName != null ? originalName : segment, contentType,
-        file.getSize(), AWS_S3_BUCKET);
+    DocumentIngestionEvent event = new DocumentIngestionEvent(key, jobReferenceId,
+        originalName != null ? originalName : segment, contentType, file.getSize(), AWS_S3_BUCKET);
+    stepFunctionIngestionService.publish(event);
   }
 
   private static String uniqueFileNameSegment(String originalFilename) {

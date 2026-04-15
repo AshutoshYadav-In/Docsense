@@ -1,9 +1,10 @@
 package com.project.ashutosh.controller;
 
-import com.project.ashutosh.dto.DocumentUploadResponse;
 import com.project.ashutosh.service.TenantDocumentUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +20,8 @@ public class FileController {
   private TenantDocumentUploadService tenantDocumentUploadService;
 
   @PostMapping
-  public DocumentUploadResponse upload(@RequestParam("file") MultipartFile file) {
-    return tenantDocumentUploadService.upload(file);
+  @ResponseStatus(HttpStatus.CREATED)
+  public void upload(@RequestParam("file") MultipartFile file) {
+    tenantDocumentUploadService.upload(file);
   }
 }
