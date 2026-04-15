@@ -96,7 +96,7 @@ public class ChunkVectorSearchService {
         }
       }
       String answer = ragBedrockService.answerFromChunks(trimmed, hits);
-      return new VectorSearchResponse(trimmed, openSearchIndexName, hits, answer);
+      return new VectorSearchResponse(trimmed, answer);
     } catch (IOException e) {
       throw new ResponseStatusException(
           HttpStatus.BAD_GATEWAY, "OpenSearch search failed", e);
