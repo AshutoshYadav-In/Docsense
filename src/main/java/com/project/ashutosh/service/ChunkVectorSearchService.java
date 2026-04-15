@@ -28,6 +28,7 @@ public class ChunkVectorSearchService {
 
   private final EmbeddingService embeddingService;
   private final OpenSearchClient openSearchClient;
+  private final RagBedrockService ragBedrockService;
 
   @Value("${opensearch.index-name}")
   private String openSearchIndexName;
@@ -44,9 +45,12 @@ public class ChunkVectorSearchService {
   private int knnNeighbors;
 
   public ChunkVectorSearchService(
-      EmbeddingService embeddingService, OpenSearchClient openSearchClient) {
+      EmbeddingService embeddingService,
+      OpenSearchClient openSearchClient,
+      RagBedrockService ragBedrockService) {
     this.embeddingService = embeddingService;
     this.openSearchClient = openSearchClient;
+    this.ragBedrockService = ragBedrockService;
   }
 
   public VectorSearchResponse search(String queryText) throws Exception {
@@ -85,7 +89,8 @@ public class ChunkVectorSearchService {
         }
         hits.add(new ChunkSearchHit(text, score, refId, fileName, chunkIndex));
       }
-      return new VectorSearchResponse(trimmed, openSearchIndexName, hits);
+      String answer = ragBedrockService.answerFromChunks(trimmed, hits);
+      return new VectorSearchResponse(trimmed, openSearchIndexName, hits, answer);
     } catch (IOException e) {
       throw new ResponseStatusException(
           HttpStatus.BAD_GATEWAY, "OpenSearch search failed", e);
