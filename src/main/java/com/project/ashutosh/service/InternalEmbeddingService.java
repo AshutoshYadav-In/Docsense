@@ -4,8 +4,8 @@ import com.project.ashutosh.dao.DocumentJobDao;
 import com.project.ashutosh.dto.BulkInsertRequest;
 import com.project.ashutosh.dto.BulkInsertResponse;
 import com.project.ashutosh.dto.ChunkWithEmbedding;
-import com.project.ashutosh.dto.EmbedRequest;
-import com.project.ashutosh.dto.EmbedResponse;
+import com.project.ashutosh.dto.EmbedBatchRequest;
+import com.project.ashutosh.dto.EmbedBatchResponse;
 import com.project.ashutosh.entity.DocumentJobStatus;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,14 +59,42 @@ public class InternalEmbeddingService {
     this.documentJobDao = documentJobDao;
   }
 
-  public EmbedResponse embed(EmbedRequest request) throws Exception {
-    String chunkText = request.getChunkText();
-    float[] vector = embeddingService.embed(chunkText);
-    List<Float> embedding = new ArrayList<>(vector.length);
-    for (float v : vector) {
-      embedding.add(v);
+  /**
+   * Embeds each text under its id. Request JSON shape: {@code {"texts":{"1":"a","2":"b"}}}. Keys
+   * and values must be non-blank; batch size is validated by {@link EmbedBatchRequest} (max
+   * {@link EmbedBatchRequest#MAX_TEXTS_PER_REQUEST} texts).
+   */
+  public EmbedBatchResponse embedBatch(EmbedBatchRequest request) throws Exception {
+    Map<String, String> textsById = request.texts();
+    validateEmbedBatch(textsById);
+    Map<String, List<Float>> out = new LinkedHashMap<>(textsById.size());
+    for (Map.Entry<String, String> e : textsById.entrySet()) {
+      float[] vector = embeddingService.embed(e.getValue());
+      List<Float> embedding = new ArrayList<>(vector.length);
+      for (float v : vector) {
+        embedding.add(v);
+      }
+      out.put(e.getKey(), embedding);
     }
-    return EmbedResponse.builder().chunkText(chunkText).embedding(embedding).build();
+    return new EmbedBatchResponse(out);
+  }
+
+  private void validateEmbedBatch(Map<String, String> textsById) {
+    if (textsById == null || textsById.isEmpty()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "embed request must include at least one id → text entry");
+    }
+    for (Map.Entry<String, String> e : textsById.entrySet()) {
+      String id = e.getKey();
+      String text = e.getValue();
+      if (id == null || id.isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "embed request ids must be non-blank");
+      }
+      if (text == null || text.isBlank()) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "embed request text for id \"" + id + "\" must be non-blank");
+      }
+    }
   }
 
   @Transactional
@@ -86,7 +114,9 @@ public class InternalEmbeddingService {
           HttpStatus.BAD_GATEWAY, "OpenSearch indexing failed", e);
     }
 
-    int updated = documentJobDao.updateStatusByReferenceId(referenceId, DocumentJobStatus.COMPLETED);
+    int updated =
+        documentJobDao.updateCompletionByReferenceId(
+            referenceId, DocumentJobStatus.COMPLETED, chunks.size());
     if (updated == 0) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "document job not found");
     }

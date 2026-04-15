@@ -41,6 +41,9 @@ public class DocumentJob {
   @Column(nullable = false)
   private DocumentJobStatus status;
 
+  @Column(name = "number_of_chunks")
+  private Integer numberOfChunks;
+
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 

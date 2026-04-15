@@ -19,6 +19,7 @@ public class DocumentJobDao extends SimpleJpaRepository<DocumentJob, Long> {
 
   private static final String REFERENCE_ID = "referenceId";
   private static final String STATUS = "status";
+  private static final String NUMBER_OF_CHUNKS = "numberOfChunks";
   private static final String UPDATED_AT = "updatedAt";
 
   private final EntityManager entityManager;
@@ -54,6 +55,18 @@ public class DocumentJobDao extends SimpleJpaRepository<DocumentJob, Long> {
     CriteriaUpdate<DocumentJob> update = cb.createCriteriaUpdate(DocumentJob.class);
     Root<DocumentJob> root = update.from(DocumentJob.class);
     update.set(root.get(STATUS), status);
+    update.set(root.get(UPDATED_AT), Instant.now());
+    update.where(cb.equal(root.get(REFERENCE_ID), referenceId));
+    return entityManager.createQuery(update).executeUpdate();
+  }
+
+  public int updateCompletionByReferenceId(
+      UUID referenceId, DocumentJobStatus status, int numberOfChunks) {
+    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    CriteriaUpdate<DocumentJob> update = cb.createCriteriaUpdate(DocumentJob.class);
+    Root<DocumentJob> root = update.from(DocumentJob.class);
+    update.set(root.get(STATUS), status);
+    update.set(root.get(NUMBER_OF_CHUNKS), numberOfChunks);
     update.set(root.get(UPDATED_AT), Instant.now());
     update.where(cb.equal(root.get(REFERENCE_ID), referenceId));
     return entityManager.createQuery(update).executeUpdate();
