@@ -13,18 +13,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/internal/embed")
+@RequestMapping("/api/internal")
 public class InternalEmbeddingController {
 
   @Autowired
   private InternalEmbeddingService internalEmbeddingService;
 
-  @PostMapping
+  @PostMapping("/embed")
   public EmbedResponse embed(@Valid @RequestBody EmbedRequest request) throws Exception {
     return internalEmbeddingService.embed(request);
   }
 
-  @PostMapping("/bulk")
+  @PostMapping("/bulk-insert")
   public BulkInsertResponse bulkInsert(@Valid @RequestBody BulkInsertRequest request) {
     return internalEmbeddingService.bulkInsert(request);
   }
