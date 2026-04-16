@@ -25,7 +25,7 @@ public class TenantController {
   @Autowired
   private TenantService tenantService;
 
-  @PostMapping
+  @PostMapping("/create")
   public ResponseEntity<TenantResponse> createTenant(@RequestBody CreateTenantRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(tenantService.createTenant(request));
   }

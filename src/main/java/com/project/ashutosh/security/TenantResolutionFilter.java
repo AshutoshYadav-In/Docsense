@@ -99,14 +99,9 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
   static boolean tenantApiPath(HttpServletRequest request) {
     String path = normalizedPath(request);
     String method = request.getMethod();
-    if ("/api/tenants".equals(path)) {
-      if ("POST".equalsIgnoreCase(method) || "GET".equalsIgnoreCase(method)) {
-        return false;
-      }
+    if ("/api/tenants/create".equals(path)) {
+     return false;
     }
-    if (path.startsWith("/api/users")) {
-      return true;
-    }
-    return path.startsWith("/api/tenants/");
+    return (path.startsWith("/api/users") || path.startsWith("/api/tenants/"));
   }
 }
