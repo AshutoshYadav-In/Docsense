@@ -1,8 +1,8 @@
 package com.project.ashutosh.config;
 
 import ch.qos.logback.core.util.StringUtil;
-import com.project.ashutosh.model.ApplicationSecret;
-import com.project.ashutosh.model.ElasticsearchCredentials;
+import com.project.ashutosh.secret.ApplicationSecret;
+import com.project.ashutosh.secret.ElasticsearchCredentials;
 import java.net.URI;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.transport.aws.AwsSdk2Transport;

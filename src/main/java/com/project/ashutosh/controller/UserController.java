@@ -1,8 +1,8 @@
 package com.project.ashutosh.controller;
 
-import com.project.ashutosh.dto.CreateUserRequest;
-import com.project.ashutosh.dto.TenantContextResponse;
-import com.project.ashutosh.dto.UserResponse;
+import com.project.ashutosh.dto.request.CreateUserRequest;
+import com.project.ashutosh.dto.response.TenantContextResponse;
+import com.project.ashutosh.dto.response.UserResponse;
 import com.project.ashutosh.service.TenantRequestContextService;
 import com.project.ashutosh.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

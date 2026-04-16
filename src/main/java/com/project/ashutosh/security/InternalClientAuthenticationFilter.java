@@ -1,8 +1,8 @@
 package com.project.ashutosh.security;
 
 import ch.qos.logback.core.util.StringUtil;
-import com.project.ashutosh.model.ApplicationSecret;
-import com.project.ashutosh.model.ClientSecret;
+import com.project.ashutosh.secret.ApplicationSecret;
+import com.project.ashutosh.secret.ClientSecret;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

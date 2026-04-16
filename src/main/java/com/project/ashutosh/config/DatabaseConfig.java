@@ -1,8 +1,8 @@
 package com.project.ashutosh.config;
 
 import ch.qos.logback.core.util.StringUtil;
-import com.project.ashutosh.model.ApplicationSecret;
-import com.project.ashutosh.model.DatabaseCredentials;
+import com.project.ashutosh.secret.ApplicationSecret;
+import com.project.ashutosh.secret.DatabaseCredentials;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;

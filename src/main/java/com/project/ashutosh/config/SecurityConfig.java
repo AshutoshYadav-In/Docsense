@@ -1,6 +1,6 @@
 package com.project.ashutosh.config;
 
-import com.project.ashutosh.model.ApplicationSecret;
+import com.project.ashutosh.secret.ApplicationSecret;
 import com.project.ashutosh.security.ApiPathPatterns;
 import com.project.ashutosh.security.InternalClientAuthenticationFilter;
 import com.project.ashutosh.security.JwtAuthenticationFilter;

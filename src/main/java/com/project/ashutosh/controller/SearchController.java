@@ -1,7 +1,7 @@
 package com.project.ashutosh.controller;
 
-import com.project.ashutosh.dto.VectorSearchRequest;
-import com.project.ashutosh.dto.VectorSearchResponse;
+import com.project.ashutosh.dto.request.VectorSearchRequest;
+import com.project.ashutosh.dto.response.VectorSearchResponse;
 import com.project.ashutosh.service.ChunkVectorSearchService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

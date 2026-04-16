@@ -1,8 +1,8 @@
 package com.project.ashutosh.service;
 
-import com.project.ashutosh.dto.ChunkSearchHit;
-import com.project.ashutosh.dto.RagAnswer;
-import com.project.ashutosh.dto.VectorSearchResponse;
+import com.project.ashutosh.dto.common.ChunkSearchHit;
+import com.project.ashutosh.dto.common.RagAnswer;
+import com.project.ashutosh.dto.response.VectorSearchResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;

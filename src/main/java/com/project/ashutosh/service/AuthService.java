@@ -1,9 +1,9 @@
 package com.project.ashutosh.service;
 
 import com.project.ashutosh.dao.UserDao;
-import com.project.ashutosh.dto.AuthResponse;
-import com.project.ashutosh.dto.LoginRequest;
-import com.project.ashutosh.dto.RegisterRequest;
+import com.project.ashutosh.dto.request.LoginRequest;
+import com.project.ashutosh.dto.request.RegisterRequest;
+import com.project.ashutosh.dto.response.AuthResponse;
 import com.project.ashutosh.entity.User;
 import com.project.ashutosh.security.JwtService;
 import org.springframework.http.HttpStatus;

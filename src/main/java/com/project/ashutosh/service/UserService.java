@@ -1,8 +1,8 @@
 package com.project.ashutosh.service;
 
 import com.project.ashutosh.dao.UserDao;
-import com.project.ashutosh.dto.CreateUserRequest;
-import com.project.ashutosh.dto.UserResponse;
+import com.project.ashutosh.dto.request.CreateUserRequest;
+import com.project.ashutosh.dto.response.UserResponse;
 import com.project.ashutosh.entity.User;
 import java.util.List;
 import org.springframework.http.HttpStatus;

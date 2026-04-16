@@ -1,7 +1,7 @@
 package com.project.ashutosh.dao;
 
 import com.project.ashutosh.entity.DocumentJob;
-import com.project.ashutosh.entity.DocumentJobStatus;
+import com.project.ashutosh.enums.DocumentJobStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;

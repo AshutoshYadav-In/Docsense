@@ -1,8 +1,8 @@
 package com.project.ashutosh.controller;
 
-import com.project.ashutosh.dto.AuthResponse;
-import com.project.ashutosh.dto.LoginRequest;
-import com.project.ashutosh.dto.RegisterRequest;
+import com.project.ashutosh.dto.request.LoginRequest;
+import com.project.ashutosh.dto.request.RegisterRequest;
+import com.project.ashutosh.dto.response.AuthResponse;
 import com.project.ashutosh.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

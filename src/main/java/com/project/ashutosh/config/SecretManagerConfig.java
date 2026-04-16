@@ -1,6 +1,6 @@
 package com.project.ashutosh.config;
 
-import com.project.ashutosh.model.ApplicationSecret;
+import com.project.ashutosh.secret.ApplicationSecret;
 import com.project.ashutosh.service.AwsSecretService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

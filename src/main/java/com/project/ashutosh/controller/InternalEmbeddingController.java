@@ -1,9 +1,9 @@
 package com.project.ashutosh.controller;
 
-import com.project.ashutosh.dto.BulkInsertRequest;
-import com.project.ashutosh.dto.BulkInsertResponse;
-import com.project.ashutosh.dto.EmbedBatchRequest;
-import com.project.ashutosh.dto.EmbedBatchResponse;
+import com.project.ashutosh.dto.request.BulkInsertRequest;
+import com.project.ashutosh.dto.request.EmbedBatchRequest;
+import com.project.ashutosh.dto.response.BulkInsertResponse;
+import com.project.ashutosh.dto.response.EmbedBatchResponse;
 import com.project.ashutosh.service.InternalEmbeddingService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

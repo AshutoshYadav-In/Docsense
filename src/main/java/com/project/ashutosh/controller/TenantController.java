@@ -1,9 +1,9 @@
 package com.project.ashutosh.controller;
 
-import com.project.ashutosh.dto.CreateTenantRequest;
-import com.project.ashutosh.dto.OnboardTenantMembersRequest;
-import com.project.ashutosh.dto.OnboardTenantMembersResponse;
-import com.project.ashutosh.dto.TenantResponse;
+import com.project.ashutosh.dto.request.CreateTenantRequest;
+import com.project.ashutosh.dto.request.OnboardTenantMembersRequest;
+import com.project.ashutosh.dto.response.OnboardTenantMembersResponse;
+import com.project.ashutosh.dto.response.TenantResponse;
 import com.project.ashutosh.service.TenantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

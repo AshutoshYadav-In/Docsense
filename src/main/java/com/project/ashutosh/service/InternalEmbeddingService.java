@@ -1,12 +1,12 @@
 package com.project.ashutosh.service;
 
 import com.project.ashutosh.dao.DocumentJobDao;
-import com.project.ashutosh.dto.BulkInsertRequest;
-import com.project.ashutosh.dto.BulkInsertResponse;
-import com.project.ashutosh.dto.ChunkWithEmbedding;
-import com.project.ashutosh.dto.EmbedBatchRequest;
-import com.project.ashutosh.dto.EmbedBatchResponse;
-import com.project.ashutosh.entity.DocumentJobStatus;
+import com.project.ashutosh.dto.common.ChunkWithEmbedding;
+import com.project.ashutosh.dto.request.BulkInsertRequest;
+import com.project.ashutosh.dto.request.EmbedBatchRequest;
+import com.project.ashutosh.dto.response.BulkInsertResponse;
+import com.project.ashutosh.dto.response.EmbedBatchResponse;
+import com.project.ashutosh.enums.DocumentJobStatus;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

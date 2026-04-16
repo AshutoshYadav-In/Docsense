@@ -3,7 +3,7 @@ package com.project.ashutosh.service;
 import ch.qos.logback.core.util.StringUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.ashutosh.dto.DocumentIngestionEvent;
+import com.project.ashutosh.dto.event.DocumentIngestionEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

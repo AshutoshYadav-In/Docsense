@@ -1,8 +1,8 @@
 package com.project.ashutosh.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.ashutosh.dto.ChunkSearchHit;
-import com.project.ashutosh.dto.RagAnswer;
+import com.project.ashutosh.dto.common.ChunkSearchHit;
+import com.project.ashutosh.dto.common.RagAnswer;
 import com.project.ashutosh.rag.RagPrompts;
 import java.util.List;
 import org.slf4j.Logger;

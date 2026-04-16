@@ -1,5 +1,6 @@
 package com.project.ashutosh.entity;
 
+import com.project.ashutosh.enums.DocumentJobStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

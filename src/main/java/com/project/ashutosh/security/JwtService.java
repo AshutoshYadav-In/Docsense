@@ -1,7 +1,7 @@
 package com.project.ashutosh.security;
 
-import com.project.ashutosh.model.ApplicationSecret;
-import com.project.ashutosh.model.JwtSecret;
+import com.project.ashutosh.secret.ApplicationSecret;
+import com.project.ashutosh.secret.JwtSecret;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

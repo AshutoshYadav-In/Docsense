@@ -1,6 +1,6 @@
 package com.project.ashutosh.service;
 
-import com.project.ashutosh.dto.TenantContextResponse;
+import com.project.ashutosh.dto.response.TenantContextResponse;
 import com.project.ashutosh.tenant.TenantContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

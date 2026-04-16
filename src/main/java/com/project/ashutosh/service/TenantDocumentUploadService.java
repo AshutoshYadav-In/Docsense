@@ -2,10 +2,10 @@ package com.project.ashutosh.service;
 
 import ch.qos.logback.core.util.StringUtil;
 import com.project.ashutosh.dao.DocumentJobDao;
-import com.project.ashutosh.dto.DocumentIngestionEvent;
-import com.project.ashutosh.dto.DocumentUploadResponse;
+import com.project.ashutosh.dto.event.DocumentIngestionEvent;
+import com.project.ashutosh.dto.response.DocumentUploadResponse;
 import com.project.ashutosh.entity.DocumentJob;
-import com.project.ashutosh.entity.DocumentJobStatus;
+import com.project.ashutosh.enums.DocumentJobStatus;
 import com.project.ashutosh.security.CurrentUserIdProvider;
 import com.project.ashutosh.storage.TenantS3ObjectKeyFactory;
 import com.project.ashutosh.tenant.TenantContext;
