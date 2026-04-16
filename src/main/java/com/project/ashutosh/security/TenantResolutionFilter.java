@@ -23,8 +23,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * if header missing/invalid UUID, {@code 404} if tenant unknown, {@code 403} if user is not a
  * member.
  *
- * <p>Excluded (no X-Tenant-Id): {@code POST /api/tenants} (create), {@code GET /api/tenants} (list
- * mine). All other {@code /api/tenants/...} and {@code /api/users} paths require the header.
+ * <p>Excluded (no X-Tenant-Id): {@code POST /api/tenants/create}, {@code GET /api/tenants} (list
+ * mine). All other {@code /api/tenants/...} and {@code /api/users} paths require the header. Rules
+ * live in {@link ApiPathPatterns#requiresTenantHeader(String)}.
  */
 public class TenantResolutionFilter extends OncePerRequestFilter {
 
@@ -32,11 +33,15 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
 
   private final TenantContext tenantContext;
   private final TenantMembershipService tenantMembershipService;
+  private final ApiPathPatterns apiPathPatterns;
 
   public TenantResolutionFilter(
-      TenantContext tenantContext, TenantMembershipService tenantMembershipService) {
+      TenantContext tenantContext,
+      TenantMembershipService tenantMembershipService,
+      ApiPathPatterns apiPathPatterns) {
     this.tenantContext = tenantContext;
     this.tenantMembershipService = tenantMembershipService;
+    this.apiPathPatterns = apiPathPatterns;
   }
 
   @Override
@@ -44,7 +49,8 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     try {
-      if (!tenantApiPath(request)) {
+      String path = apiPathPatterns.normalizedPath(request);
+      if (!apiPathPatterns.requiresTenantHeader(path)) {
         filterChain.doFilter(request, response);
         return;
       }
@@ -81,27 +87,5 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
     } finally {
       tenantContext.clear();
     }
-  }
-
-  static String normalizedPath(HttpServletRequest request) {
-    String uri = request.getRequestURI();
-    String context = request.getContextPath();
-    if (context != null && !context.isEmpty() && uri.startsWith(context)) {
-      uri = uri.substring(context.length());
-    }
-    if (uri.length() > 1 && uri.endsWith("/")) {
-      uri = uri.substring(0, uri.length() - 1);
-    }
-    return uri.isEmpty() ? "/" : uri;
-  }
-
-  /** True when this request must carry X-Tenant-Id and the user must be a member. */
-  static boolean tenantApiPath(HttpServletRequest request) {
-    String path = normalizedPath(request);
-    String method = request.getMethod();
-    if ("/api/tenants/create".equals(path)) {
-     return false;
-    }
-    return (path.startsWith("/api/users") || path.startsWith("/api/tenants/"));
   }
 }

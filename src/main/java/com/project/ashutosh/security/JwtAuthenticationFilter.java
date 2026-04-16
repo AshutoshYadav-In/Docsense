@@ -16,28 +16,31 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Enforces Bearer JWT on {@code /api/users/**} and {@code /api/tenants/**}. Missing or invalid
- * tokens yield {@code 401 Unauthorized} before the controller runs. {@code /api/internal/**} is
- * skipped entirely (see {@link InternalClientAuthenticationFilter}).
+ * Enforces Bearer JWT on all {@code /api/**} routes except those skipped by {@link ApiPathPatterns}
+ * ({@code /api/auth/**}, {@code /api/internal/**}). Other paths may still send an optional Bearer
+ * token (invalid token yields 401). {@code /api/internal/**} is skipped entirely (see {@link
+ * InternalClientAuthenticationFilter}).
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
+  private final ApiPathPatterns apiPathPatterns;
 
-  public JwtAuthenticationFilter(JwtService jwtService) {
+  public JwtAuthenticationFilter(JwtService jwtService, ApiPathPatterns apiPathPatterns) {
     this.jwtService = jwtService;
+    this.apiPathPatterns = apiPathPatterns;
   }
 
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    String path = TenantResolutionFilter.normalizedPath(request);
-    if (path.startsWith("/api/internal")) {
+    String path = apiPathPatterns.normalizedPath(request);
+    if (apiPathPatterns.isJwtSkipped(path)) {
       filterChain.doFilter(request, response);
       return;
     }
-    if (requiresBearerAuth(request)) {
+    if (apiPathPatterns.requiresJwtBearer(path)) {
       if (!authenticateFromBearerHeader(request, response, true)) {
         return;
       }
@@ -50,22 +53,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
-  /** {@code /api/users} and {@code /api/tenants} require a valid Bearer JWT before the controller runs. */
-  private static boolean requiresBearerAuth(HttpServletRequest request) {
-    String path = TenantResolutionFilter.normalizedPath(request);
-    return path.startsWith("/api/users") || path.startsWith("/api/tenants");
-  }
-
   /**
    * Parses {@code Authorization: Bearer <token>}, validates with {@link JwtService}, and sets the
-   * security context. When {@code required} is true (user API), missing or invalid credentials
-   * yield 401 and {@code false}.
+   * security context. When {@code required} is true, missing or invalid credentials yield 401 and
+   * {@code false}.
    */
   private boolean authenticateFromBearerHeader(
       HttpServletRequest request, HttpServletResponse response, boolean required)
       throws IOException {
     String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-    if (StringUtil.isNullOrEmpty(header) || !header.startsWith("Bearer ")) {
+    if (StringUtil.isNullOrEmpty(header)) {
       if (required) {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
       }

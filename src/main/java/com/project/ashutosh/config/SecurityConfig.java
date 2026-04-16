@@ -1,6 +1,7 @@
 package com.project.ashutosh.config;
 
 import com.project.ashutosh.model.ApplicationSecret;
+import com.project.ashutosh.security.ApiPathPatterns;
 import com.project.ashutosh.security.InternalClientAuthenticationFilter;
 import com.project.ashutosh.security.JwtAuthenticationFilter;
 import com.project.ashutosh.security.JwtService;
@@ -9,7 +10,6 @@ import com.project.ashutosh.service.TenantMembershipService;
 import com.project.ashutosh.tenant.TenantContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
   @Bean
@@ -30,20 +29,23 @@ public class SecurityConfig {
   }
 
   @Bean
-  public JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService) {
-    return new JwtAuthenticationFilter(jwtService);
+  public JwtAuthenticationFilter jwtAuthenticationFilter(
+      JwtService jwtService, ApiPathPatterns apiPathPatterns) {
+    return new JwtAuthenticationFilter(jwtService, apiPathPatterns);
   }
 
   @Bean
   public InternalClientAuthenticationFilter internalClientAuthenticationFilter(
-      ApplicationSecret applicationSecret) {
-    return new InternalClientAuthenticationFilter(applicationSecret);
+      ApplicationSecret applicationSecret, ApiPathPatterns apiPathPatterns) {
+    return new InternalClientAuthenticationFilter(applicationSecret, apiPathPatterns);
   }
 
   @Bean
   public TenantResolutionFilter tenantResolutionFilter(
-      TenantContext tenantContext, TenantMembershipService tenantMembershipService) {
-    return new TenantResolutionFilter(tenantContext, tenantMembershipService);
+      TenantContext tenantContext,
+      TenantMembershipService tenantMembershipService,
+      ApiPathPatterns apiPathPatterns) {
+    return new TenantResolutionFilter(tenantContext, tenantMembershipService, apiPathPatterns);
   }
 
   @Bean
@@ -64,13 +66,11 @@ public class SecurityConfig {
 
     http.authorizeHttpRequests(
         auth ->
-            auth.requestMatchers("/api/auth/**")
+            auth.requestMatchers("/api/auth", "/api/auth/**")
                 .permitAll()
-                .requestMatchers("/api/internal/**")
+                .requestMatchers("/api/internal", "/api/internal/**")
                 .authenticated()
-                .requestMatchers("/api/users/**")
-                .authenticated()
-                .requestMatchers("/api/tenants/**")
+                .requestMatchers("/api/**")
                 .authenticated()
                 .anyRequest()
                 .permitAll());

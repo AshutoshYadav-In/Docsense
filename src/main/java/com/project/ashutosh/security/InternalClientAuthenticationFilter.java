@@ -26,16 +26,19 @@ public class InternalClientAuthenticationFilter extends OncePerRequestFilter {
   public static final String CLIENT_TOKEN_HEADER = "X-Client-Token";
 
   private final ApplicationSecret applicationSecret;
+  private final ApiPathPatterns apiPathPatterns;
 
-  public InternalClientAuthenticationFilter(ApplicationSecret applicationSecret) {
+  public InternalClientAuthenticationFilter(
+      ApplicationSecret applicationSecret, ApiPathPatterns apiPathPatterns) {
     this.applicationSecret = applicationSecret;
+    this.apiPathPatterns = apiPathPatterns;
   }
 
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    String path = TenantResolutionFilter.normalizedPath(request);
+    String path = apiPathPatterns.normalizedPath(request);
     if (!path.startsWith("/api/internal")) {
       filterChain.doFilter(request, response);
       return;
