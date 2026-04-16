@@ -1,33 +1,33 @@
 package com.project.ashutosh.rag;
 
 /**
- * Default RAG prompts. For production, tighten style/guardrails and keep CONTEXT structured
- * (numbered passages work well with Claude on Bedrock).
- *
- * <p><b>How many chunks?</b> Typical RAG uses <b>3–5</b> retrieved passages: fewer miss nuance; more
- * adds noise and tokens. This app uses the same limit as vector search ({@code opensearch.search.top-k},
- * default 5).
+ * RAG prompts for Bedrock. The structured response shape (answer + sources) is enforced via
+ * tool-use config, not prompt instructions.
  */
 public final class RagPrompts {
 
   private RagPrompts() {}
 
-  /**
-   * System instruction: answer only from context, short output. Pair with a user message that
-   * contains QUESTION + numbered CONTEXT block.
-   */
   public static final String SYSTEM =
       """
       You are a concise assistant for a document search product.
       Answer the user's QUESTION using ONLY information in the CONTEXT passages below.
-      If CONTEXT does not contain enough information, say briefly that it is not stated in the provided passages.
-      Do not invent facts or sources.
-      Reply in at most 3–4 short lines of plain text (no markdown headings, no bullet lists unless essential).
+      Each passage is numbered and tagged with its source document name in square brackets, e.g. [report.pdf].
+
+      CITATION FORMAT (MANDATORY — never skip this):
+      - EVERY sentence or fact in your answer MUST end with an inline citation in square brackets \
+      containing the exact document name(s) it came from.
+      - Single source example: "Employees get 20 paid leaves per year [Leave-Policy.pdf]."
+      - Multiple sources example: "The system marks the student absent [attendance.pdf, rules.pdf]."
+      - If a sentence uses information from two documents, list BOTH inside one bracket, comma-separated.
+      - NEVER write a sentence without a [citation] at the end.
+
+      OTHER RULES:
+      - If CONTEXT does not contain enough information, say so briefly.
+      - Do not invent facts or document names.
+      - Keep the answer to 3–4 short lines of plain text.
       """;
 
-  /**
-   * Builds the user message: repeats the question and appends numbered passages from retrieval.
-   */
   public static String buildUserMessage(String question, String numberedContextBlock) {
     return """
         QUESTION:

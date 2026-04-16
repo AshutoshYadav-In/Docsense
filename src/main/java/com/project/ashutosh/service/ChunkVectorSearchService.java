@@ -1,6 +1,7 @@
 package com.project.ashutosh.service;
 
 import com.project.ashutosh.dto.ChunkSearchHit;
+import com.project.ashutosh.dto.RagAnswer;
 import com.project.ashutosh.dto.VectorSearchResponse;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -95,8 +96,8 @@ public class ChunkVectorSearchService {
           break;
         }
       }
-      String answer = ragBedrockService.answerFromChunks(trimmed, hits);
-      return new VectorSearchResponse(trimmed, answer);
+      RagAnswer ragAnswer = ragBedrockService.answerFromChunks(trimmed, hits);
+      return new VectorSearchResponse(trimmed, ragAnswer.answer(), ragAnswer.sources());
     } catch (IOException e) {
       throw new ResponseStatusException(
           HttpStatus.BAD_GATEWAY, "OpenSearch search failed", e);
