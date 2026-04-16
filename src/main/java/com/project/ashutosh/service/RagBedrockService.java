@@ -126,7 +126,6 @@ public class RagBedrockService {
 
     List<ContentBlock> blocks = response.output().message().content();
     for (ContentBlock block : blocks) {
-      log.info("Bedrock content block type={}", block.type());
 
       ToolUseBlock toolUse;
       try {
@@ -136,7 +135,6 @@ public class RagBedrockService {
       }
 
       if (toolUse != null) {
-        log.info("Tool use: name={}, input={}", toolUse.name(), toolUse.input());
         if (TOOL_NAME.equals(toolUse.name()) && toolUse.input() != null) {
           try {
             return objectMapper.convertValue(toolUse.input().unwrap(), RagAnswer.class);
@@ -147,10 +145,8 @@ public class RagBedrockService {
       }
     }
 
-    log.warn("No tool_use block found; stopReason={}, blockCount={}, blockTypes={}",
-        response.stopReasonAsString(),
-        blocks.size(),
-        blocks.stream().map(b -> String.valueOf(b.type())).toList());
+    log.warn("No tool_use block found; stopReason={}, blockCount={}, blockTypes={}", response.stopReasonAsString(),
+        blocks.size(), blocks.stream().map(b -> String.valueOf(b.type())).toList());
     return new RagAnswer("", List.of());
   }
 
