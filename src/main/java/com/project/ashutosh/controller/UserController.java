@@ -29,22 +29,9 @@ public class UserController {
   @Autowired
   private UserService userService;
 
-  @Autowired
-  private TenantRequestContextService tenantRequestContextService;
-
-  @GetMapping("/user/tenant-context")
-  public TenantContextResponse tenantContext() {
-    return tenantRequestContextService.requireTenantContextResponse();
-  }
-
   @GetMapping("/{id}")
   public UserResponse get(@PathVariable Long id) {
     return userService.getUser(id);
-  }
-
-  @PostMapping
-  public ResponseEntity<UserResponse> create(@RequestBody CreateUserRequest request) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
   }
 
   @DeleteMapping("/{id}")
