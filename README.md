@@ -1,5 +1,10 @@
 # Docsense
 
+| Repository | Description |
+|------------|-------------|
+| **Docsense** (this repo) | Spring Boot API — multi-tenant RAG platform with local embeddings, OpenSearch vector store, and AWS Bedrock for answers |
+| **[Docsense-serverless](https://github.com/AshutoshYadav-In/Docsense-serverless)** | AWS Step Functions pipeline — async document ingestion (chunk, embed, bulk-insert vectors) |
+
 Docsense is a multi-tenant RAG (Retrieval-Augmented Generation) platform built with Spring Boot.
 Users upload documents, the system chunks and embeds them locally using a DJL PyTorch model,
 stores the vectors in Amazon OpenSearch, and answers natural-language questions using AWS Bedrock.
